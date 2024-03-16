@@ -1,0 +1,37 @@
+From 2b0aafdc92f691bc4b987300c9001a7cc3fb8d08 Mon Sep 17 00:00:00 2001
+From: Willy Tarreau <w@1wt.eu>
+Date: Tue, 26 Jul 2022 19:06:17 +0200
+Subject: BUG/MINOR: fd: always remove late updates when freeing fd_updt[]
+
+Christopher found that since commit 8e2c0fa8e ("MINOR: fd: delete unused
+updates on close()") we may crash in a late stop due to an fd_delete()
+in the main thread performed after all threads have deleted the fd_updt[]
+array. Prior to that commit that didn't happen because we didn't touch
+the updates on this path, but now it may happen. We don't care about these
+ones anyway since the poller is stopped, so let's just wipe them by
+resetting their counter before freeing the array.
+
+No backport is needed as this is only 2.7.
+
+(cherry picked from commit b9831458374ba4bdba52aebe77a4005dcf59636d)
+[cf: Must be backported to 2.5]
+Signed-off-by: Christopher Faulet <cfaulet@haproxy.com>
+---
+ src/fd.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/fd.c b/src/fd.c
+index 498dd565f..c005734df 100644
+--- a/src/fd.c
++++ b/src/fd.c
+@@ -1013,6 +1013,7 @@ static void deinit_pollers_per_thread()
+ /* Release the pollers per thread, to be called late */
+ static void free_pollers_per_thread()
+ {
++	fd_nbupdt = 0;
+ 	ha_free(&fd_updt);
+ }
+ 
+-- 
+2.38.4
+
