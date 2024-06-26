@@ -40,6 +40,9 @@
         "2.8.6" = {
           sha256 = "sha256-n9A0NovmaIC9hqMAwT3AO8E1Ie4mVIgN3fGSeFqijVE=";
         };
+        "2.8.10" = {
+          sha256 = "sha256-DWPNRtnRCsfbwC88Z2nBkI8iHgpcW2VaGUZV91KNYSo=";
+        };
       };
 
       versionsList = builtins.attrNames haproxyVersions;
@@ -82,7 +85,7 @@
     in haproxyPackages // {
       ocp-haproxy-meta = haproxyMeta;
       ocp-haproxy-debug-meta = haproxyMetaDebug;
-      ocp-haproxy = final.ocp-haproxy-2_8_6;
+      ocp-haproxy = final.ocp-haproxy-2_8_10;
     };
   in {
     checks = forAllSystems (system: {
