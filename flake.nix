@@ -32,6 +32,10 @@
         };
         "2.8.5" = {
           sha256 = "sha256-P1RZxaWOCzQ6MurvftW+2dP8KdiqnhSzbJLJafwqYNk=";
+          patches = [
+            ./patches/2.8.5/0001-BUG-MAJOR-ssl_sock-Always-clear-retry-flags-in-read-.patch
+            ./patches/2.8.5/0001-BUG-MINOR-haproxy-only-tid-0-must-not-sleep-if-got-s.patch
+          ];
         };
         "2.8.6" = {
           sha256 = "sha256-n9A0NovmaIC9hqMAwT3AO8E1Ie4mVIgN3fGSeFqijVE=";

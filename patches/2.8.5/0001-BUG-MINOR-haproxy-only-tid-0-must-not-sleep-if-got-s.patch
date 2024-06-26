@@ -1,0 +1,44 @@
+From 4d895b9e4bee9cdab6630203f935f98afd35ec06 Mon Sep 17 00:00:00 2001
+From: Valentine Krasnobaeva <vkrasnobaeva@haproxy.com>
+Date: Mon, 6 May 2024 14:24:41 +0200
+Subject: BUG/MINOR: haproxy: only tid 0 must not sleep if got signal
+
+This patch fixes the commit eea152ee68
+("BUG/MINOR: signals/poller: ensure wakeup from signals").
+
+There is some probability that run_poll_loop() becomes inifinite, if
+TH_FL_SLEEPING is withdrawn from all threads in the second signal_queue_len
+check, when a signal has received just after the first one.
+
+In such particular case, the 'wake' variable, which is used to terminate
+thread's poll loop is never reset to 0. So, we never enter to the "stopping"
+part of the run_poll_loop() and threads, except the one with id 0 (tid 0
+handles signals), will continue to call _do_poll() eternally and will never
+sleep, as its TH_FL_SLEEPING flag was unset.
+
+This flag needs to be removed only for the tid 0, as it was done in the first
+signal_queue_len check.
+
+This fixes an issue #2537 "infinite loop when shutting down".
+
+This fix must be backported in every stable version.
+---
+ src/haproxy.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/haproxy.c b/src/haproxy.c
+index f7a91b9d3..4c7754939 100644
+--- a/src/haproxy.c
++++ b/src/haproxy.c
+@@ -2983,7 +2983,7 @@ void run_poll_loop()
+ 			if (thread_has_tasks()) {
+ 				activity[tid].wake_tasks++;
+ 				_HA_ATOMIC_AND(&th_ctx->flags, ~TH_FL_SLEEPING);
+-			} else if (signal_queue_len) {
++			} else if (signal_queue_len && tid == 0) {
+ 				/* this check is required after setting TH_FL_SLEEPING to avoid
+ 				 * a race with wakeup on signals using wake_threads() */
+ 				_HA_ATOMIC_AND(&th_ctx->flags, ~TH_FL_SLEEPING);
+-- 
+2.44.0
+
