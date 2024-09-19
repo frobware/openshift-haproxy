@@ -9,11 +9,15 @@
     );
 
     haproxyOverlay = final: prev: let
-      makeHAProxyPackage = { version, sha256, patches ? [], debug ? false, target ? "linux-glibc" }: prev.callPackage ./package.nix {
+      makeHAProxyPackage = { version, sha256, patches ? [], debug ? false, target ? "linux-glibc", openssl }: prev.callPackage ./package.nix {
         inherit version sha256 debug patches target;
       };
 
       haproxyVersions = {
+        "2.2.24" = {
+          sha256 = "sha256-DoBzENzjpSk9JFTZwbceuNFkcjBbZvB2s4S1CFix5/k=";
+          openssl = prev.pkgs.openssl_1_1;
+        };
         "2.6.13" = {
           sha256 = "0hsj7zv1dxcz9ryr7hg1bczy7h9f488x307j5q9mg9mw7lizb7yn";
           patches = [
@@ -50,8 +54,20 @@
       haproxyPackages = builtins.listToAttrs (nixpkgs.lib.flatten (nixpkgs.lib.mapAttrsToList (version: value: let
         releaseName = "ocp-haproxy-${builtins.replaceStrings ["."] ["_"] version}";
         debugName = "ocp-haproxy-debug-${builtins.replaceStrings ["."] ["_"] version}";
-        releasePackage = makeHAProxyPackage { inherit version; sha256 = value.sha256; patches = value.patches or []; debug = false; };
-        debugPackage = makeHAProxyPackage { inherit version; sha256 = value.sha256; patches = value.patches or []; debug = true; };
+        releasePackage = makeHAProxyPackage {
+          inherit version;
+          debug = false;
+          openssl = value.openssl;
+          patches = value.patches or [];
+          sha256 = value.sha256;
+        };
+        debugPackage = makeHAProxyPackage {
+          inherit version;
+          debug = true;
+          openssl = value.openssl;
+          patches = value.patches or [];
+          sha256 = value.sha256;
+        };
       in [
         { name = releaseName; value = releasePackage; }
         { name = debugName; value = debugPackage; }
@@ -106,6 +122,12 @@
         pkgs.valgrind
       ];
 
+      devShellPackages = [
+        pkgs.gdb
+        pkgs.pkg-config
+        pkgs.valgrind
+      ];
+
       sharedShellHook = ''
         export LD=$CC
         export CPU="generic"
@@ -137,6 +159,7 @@
           pkgs.gcc8
           pkgs.openssl_1_1
         ];
+        packages = devShellPackages;
         shellHook = ''
           echo "haproxy22 dev environment"
         '' + sharedShellHook;
@@ -150,6 +173,7 @@
           pkgs.gcc11
           pkgs.openssl_3
         ];
+        packages = devShellPackages;
         shellHook = ''
           echo "haproxy26+ dev environment"
         '' + sharedShellHook;

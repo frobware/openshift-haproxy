@@ -1,4 +1,4 @@
-{ fetchurl, lib, pkgs, stdenv, version, sha256, patches, target ? "linux-glibc", debug ? false }:
+{ fetchurl, lib, pkgs, stdenv, version, sha256, patches, target ? "linux-glibc", debug ? false, openssl ? pkgs.openssl_3 }:
 
 let
   print-compiler-includes = pkgs.writeScriptBin "print-compiler-includes" "${builtins.readFile ./print-compiler-includes.pl}";
@@ -25,12 +25,13 @@ let
   commonBuildAttrs = {
     inherit version patches src;
     pname = "ocp-haproxy";
-    buildInputs = with pkgs; [
-      libxcrypt
-      openssl_3
-      pcre
-      systemd
-      zlib
+    buildInputs = [
+      openssl
+
+      pkgs.libxcrypt
+      pkgs.pcre
+      pkgs.systemd
+      pkgs.zlib
     ];
     enableParallelBuilding = true;
   };
