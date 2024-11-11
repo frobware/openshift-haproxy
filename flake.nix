@@ -31,6 +31,9 @@
         "2.6.15" = {
           sha256 = "sha256-QfjhaV6S+v3/45aQpomT8aD19/BpMamemhU/dJ6jnP0=";
         };
+        "2.6.20" = {
+          sha256 = "sha256-74w5ejf+xPffHPrcLJDxn0zC5BY650V8ewUtqfWhemk=";
+        };
         "2.8.3" = {
           sha256 = "sha256-nsxv/mepd9HtJ5EHu9q3kNc64qYmvDju4j+h9nhqdZ4=";
         };
@@ -46,6 +49,9 @@
         };
         "2.8.10" = {
           sha256 = "sha256-DWPNRtnRCsfbwC88Z2nBkI8iHgpcW2VaGUZV91KNYSo=";
+        };
+        "2.8.12" = {
+          sha256 = "sha256-FsFsHXumeTyJqPrn8gxZXRlJe7GNdf7dny23d0Gx+nU=";
         };
       };
 
